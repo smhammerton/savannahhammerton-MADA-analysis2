@@ -9,47 +9,67 @@ library(readxl) #for loading Excel files
 library(dplyr) #for data processing
 library(here) #to set paths
 
+#here is the link to the source of the dataset:
+#https://data.cdc.gov/NCHS/Provisional-COVID-19-Deaths-by-Sex-and-Age/9bhg-hcku
+
 #path to data
 #note the use of the here() package and not absolute paths
-data_location <- here::here("data","raw_data","exampledata.xlsx")
+data_location <- here::here("data","raw_data",
+                            "Provisional_COVID-19_Deaths_by_sex_and_Age.xlsx")
 
-#load data. 
-#note that for functions that come from specific packages (instead of base R)
-# I often specify both package and function like so
-#package::function() that's not required one could just call the function
-#specifying the package makes it clearer where the function "lives",
-#but it adds typing. You can do it either way.
-rawdata <- readxl::read_excel(data_location)
+#load data
+#after a couple attempts of loading the data and noticing that one or more
+#variable was imported as the wrong data type, so I manually, explicitly 
+#entered the data type for each variable (column)
+rawdata <- readxl::read_xlsx(data_location, sheet = 1, col_names = TRUE, 
+                             col_types = c('date', 'date', 'date', 'text', 
+                                           'numeric', 'numeric', 'text', 'text',
+                                           'text','numeric', 'numeric', 
+                                           'numeric', 'numeric', 
+                                           'numeric', 'numeric', 'text'))
 
 #take a look at the data
 dplyr::glimpse(rawdata)
 
-#dataset is so small, we can print it to the screen.
-#that is often not possible.
-print(rawdata)
+#renaming the columns to get rid of spaces and capitalization
+colnames(rawdata) [1] <- 'date.as.of'
+colnames(rawdata) [2] <- 'start.date'
+colnames(rawdata) [3] <- 'end.date'
+colnames(rawdata) [4] <- 'group'
+colnames(rawdata) [5] <- 'year'
+colnames(rawdata) [6] <- 'month'
+colnames(rawdata) [7] <- 'state'
+colnames(rawdata) [8] <- 'sex'
+colnames(rawdata) [9] <- 'age.group'
+colnames(rawdata) [10] <- 'covid19.deaths'
+colnames(rawdata) [11] <- 'total.dealths'
+colnames(rawdata) [12] <- 'pneumonia.deaths'
+colnames(rawdata) [13] <- 'pneumonia.and.covid19.deaths'
+colnames(rawdata) [14] <- 'influenza.deaths'
+colnames(rawdata) [15] <- 'pneu.influ.covid.deaths'
+colnames(rawdata) [16] <- 'footnote'
 
-# looks like we have measurements for height (in centimeters) and weight (in kilogram)
 
-# there are some problems with the data: 
-# There is an entry which says "sixty" instead of a number. 
-# Does that mean it should be a numeric 60? It somehow doesn't make
-# sense since the weight is 60kg, which can't happen for a 60cm person (a baby)
-# Since we don't know how to fix this, we need to remove the person.
-# This "sixty" entry also turned all Height entries into characters instead of numeric.
-# We need to fix that too.
-# Then there is one person with a height of 6. 
-# that could be a typo, or someone mistakenly entered their height in feet.
-# Since we unfortunately don't know, we'll have to remove this person.
-# similarly, there is a person with weight of 7000, which is impossible,
-# and one person with missing weight.
-# to be able to analyze the data, we'll remove those 5 individuals
+#Viewing the dataframe in it's own tab to do a final check
+View(rawdata)
 
-# this is one way of doing it. Note that if the data gets updated, 
-# we need to decide if the thresholds are ok (newborns could be <50)
+#Since I am only interested in some of the included variables in the dataset, 
+#I will narrow it down to just those variables
+#The outcome I am interested in is COVID-19 deaths, so I have included that 
+#I am particularly interested in sex and age group as the predictors so those 
+#are included as well
+#I have included some time variables (whether the measurement is overall, by 
+#month, or by year, and when those months and years are) so I have the option 
+#of seeing whether the results vary by time
+#Finally, for simplicity's sake, I chose to use only the data for the US overall
+processeddata <- rawdata %>%
+  select(start.date, end.date, group, year, month, state, sex, age.group, 
+         covid19.deaths) %>%
+  filter(state == 'United States')
+#Checking the new object to make sure it looks right
+dplyr::glimpse(processeddata)
 
-processeddata <- rawdata %>% dplyr::filter( Height != "sixty" ) %>% 
-                             dplyr::mutate(Height = as.numeric(Height)) %>% 
-                             dplyr::filter(Height > 50 & Weight < 1000)
+
 
 # save data as RDS
 # I suggest you save your processed and cleaned data as RDS or RDA/Rdata files. 
@@ -62,5 +82,9 @@ processeddata <- rawdata %>% dplyr::filter( Height != "sixty" ) %>%
 save_data_location <- here::here("data","processed_data","processeddata.rds")
 
 saveRDS(processeddata, file = save_data_location)
+
+
+
+
 
 
