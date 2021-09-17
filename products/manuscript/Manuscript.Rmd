@@ -1,7 +1,7 @@
 ---
-title: "Example Manuscript Template for a Data Analysis Project"
+title: "Data Analysis 2"
 subtitle: ""
-author: Andreas Handel
+author: Savannah Hammerton
 date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
 documentclass: article
@@ -12,7 +12,7 @@ output:
   bookdown::html_document2: 
     toc: false
 bibliography: ../references.bib
-csl: ../apa.csl
+
 ---
 
 The structure below is a possible setup for a data analysis project (including the course project). For a manuscript, adjust as needed.
@@ -55,21 +55,19 @@ _Continue by creating plots or tables of the outcome(s) of interest and the pred
 
 _To get some further insight into your data, if reasonable you could compute simple statistics (e.g. t-tests, simple regression model with 1 predictor, etc.) to look for associations between your outcome(s) and each individual predictor variable. Though note that unless you pre-specified the outcome and main exposure, any "p<0.05 means statistical significance" interpretation is not valid._
 
-Table \@ref(tab:summarytable) shows a table summarizing the data.
 
 
-```{r summarytable,  echo=FALSE}
-resulttable=readRDS("../../results/summarytable.rds")
-knitr::kable(resulttable, caption = 'Data summary table.')
+Figure \@ref(fig:resultfigure1) shows COVID-19 deaths according to age group. 
+
+```{r resultfigure1,  fig.cap='COVID-19 Deaths by Age Group', echo=FALSE}
+knitr::include_graphics("../../results/resultfigure1.png")
 ```
 
 
-Figure \@ref(fig:resultfigure) shows a scatterplot figure produced by one of the R scripts.
-
-```{r resultfigure,  fig.cap='Analysis figure.', echo=FALSE}
-knitr::include_graphics("../../results/resultfigure.png")
+Figure \@ref(fig:resultfigure2) shows COVID-19 deaths according to sex. 
+```{r resultfigure2,  fig.cap='COVID-19 Deaths by Sex', echo=FALSE}
+knitr::include_graphics("../../results/resultfigure2.png")
 ```
-
 
 ## Full analysis
 
