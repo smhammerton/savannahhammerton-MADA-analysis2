@@ -6,8 +6,9 @@
 
 #load needed packages. make sure they are installed.
 library(ggplot2) #for plotting
-library(broom) #for cleaning up output from lm()
 library(here) #for data loading/saving
+library(tidyverse) #for help with managing data
+library(scales) #for cleaner illustration of data
 
 #path to data
 #note the use of the here() package and not absolute paths
@@ -19,51 +20,53 @@ mydata <- readRDS(data_location)
 ######################################
 #Data exploration/description
 ######################################
-#I'm using basic R commands here.
-#Lots of good packages exist to do more.
-#For instance check out the tableone or skimr packages
 
-#summarize data 
-mysummary = summary(mydata)
+#Our outcome of interest is COVID-19 deaths
+#Variables that will serve as predictors of outcome include age group and sex
 
-#look at summary
-print(mysummary)
+#Plot 1, Plotting COVID-19 deaths by age group 
 
-#do the same, but with a bit of trickery to get things into the 
-#shape of a data frame (for easier saving/showing in manuscript)
-summary_df = data.frame(do.call(cbind, lapply(mydata, summary)))
+plot_1 <- mydata %>%
+  ggplot(aes(x=age.group, y=covid19.deaths)) +
+  geom_bar(stat = "identity") +
+  ggtitle("COVID-19 Deaths by Age Group in the United States")+
+  geom_smooth(method='lm')+
+  scale_x_discrete(guide = guide_axis(n.dodge = 1, check.overlap = TRUE))+
+  scale_y_continuous(labels = comma)+
+  theme(axis.text.x = element_text(angle = 90, size=8))
 
-#save data frame table to file for later use in manuscript
-summarytable_file = here("results", "summarytable.rds")
-saveRDS(summary_df, file = summarytable_file)
+  
+#Examine plot
+plot(plot_1)
 
 
-#make a scatterplot of data
-#we also add a linear regression line to it
-p1 <- mydata %>% ggplot(aes(x=Height, y=Weight)) + geom_point() + geom_smooth(method='lm')
+#Note that due to the sequential nature of ordering, some variables
+#(such as 5-14) are mistakenly in the middle of the chart.
 
-#look at figure
-plot(p1)
 
-#save figure
-figure_file = here("results","resultfigure.png")
-ggsave(filename = figure_file, plot=p1) 
+#Save the plot
+figure_file1 = here::here("results","resultfigure1.png")
+ggsave(filename = figure_file1, plot = plot_1)
 
-######################################
-#Data fitting/statistical analysis
-######################################
+#Plot 2, Plotting COVID-19 deaths by sex
+  
+plot_2 <-mydata %>%
+  ggplot(aes(x=sex, y=covid19.deaths))+
+  geom_bar(stat = "identity") +
+  ggtitle("COVID-19 Deaths by Sex in the United States")+
+  geom_smooth(method='lm')+
+  scale_y_continuous(labels = comma)
 
-# fit linear model
-lmfit <- lm(Weight ~ Height, mydata)  
 
-# place results from fit into a data frame with the tidy function
-lmtable <- broom::tidy(lmfit)
+#Examine the Plot
+plot(plot_2)
 
-#look at fit results
-print(lmtable)
+#Save the plot
+figure_file2 = here::here("results","resultfigure2.png")
+ggsave(filename = figure_file2, plot = plot_2)
 
-# save fit results table  
-table_file = here("results", "resulttable.rds")
-saveRDS(lmtable, file = table_file)
+  
+  
+
 
   
